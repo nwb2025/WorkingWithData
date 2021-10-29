@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Monster Stickers</string>
+    <string name="main_title">Stickers</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="scariness_rating">Scariness Rating</string>
+    <string name="scaryness">Scaryness</string>
+    <string name="scariness">Scariness</string>
+</resources>

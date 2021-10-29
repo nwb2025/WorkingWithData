@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="app/src/main/res/drawable/background_selected.xml" value="0.26944444444444443" />
+        <entry key="app/src/main/res/layout/fragment_detail.xml" value="0.1578125" />
+        <entry key="app/src/main/res/layout/fragment_detailed.xml" value="0.1578125" />
+        <entry key="app/src/main/res/layout/fragment_splash.xml" value="0.16822916666666668" />
+        <entry key="app/src/main/res/layout/main_activity.xml" value="0.16822916666666668" />
+        <entry key="app/src/main/res/layout/main_fragment.xml" value="0.16822916666666668" />
+        <entry key="app/src/main/res/layout/monster_grid_item.xml" value="0.16822916666666668" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="JDK" project-jdk-type="JavaSDK" />
+</project>

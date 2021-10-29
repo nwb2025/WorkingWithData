@@ -1,0 +1,170 @@
+Index: app/src/main/java/com/example/androiddata/ui/main/MainFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.androiddata.ui.main\n\nimport android.os.Bundle\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport androidx.fragment.app.Fragment\nimport androidx.lifecycle.Observer\nimport androidx.lifecycle.ViewModelProviders\nimport androidx.recyclerview.widget.RecyclerView\nimport androidx.swiperefreshlayout.widget.SwipeRefreshLayout\nimport com.example.androiddata.R\nimport kotlinx.android.synthetic.main.main_fragment.*\n\nclass MainFragment : Fragment() {\n\n    private lateinit var viewModel: MainViewModel\n    private lateinit var recyclerView: RecyclerView\n    private lateinit var swipeLayout: SwipeRefreshLayout\n\n    override fun onCreateView(\n        inflater: LayoutInflater, container: ViewGroup?,\n        savedInstanceState: Bundle?\n    ): View {\n        val view = inflater.inflate(R.layout.main_fragment, container, false)\n        recyclerView = view.findViewById(R.id.recyclerView)\n        swipeLayout = view.findViewById(R.id.swipeLayout)\n        swipeLayout.setOnRefreshListener {\n            viewModel.refreshData()\n        }\n\n        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)\n        viewModel.monsterData.observe(this, Observer\n        {\n            val adapter = MainRecyclerAdapter(requireContext(), it)\n            recyclerView.adapter = adapter\n            swipeLayout.isRefreshing = false\n        })\n\n        return view\n    }\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/ui/main/MainFragment.kt b/app/src/main/java/com/example/androiddata/ui/main/MainFragment.kt
+--- a/app/src/main/java/com/example/androiddata/ui/main/MainFragment.kt	
++++ b/app/src/main/java/com/example/androiddata/ui/main/MainFragment.kt	
+@@ -4,40 +4,62 @@
+ import android.view.LayoutInflater
+ import android.view.View
+ import android.view.ViewGroup
++import androidx.appcompat.app.AppCompatActivity
+ import androidx.fragment.app.Fragment
+ import androidx.lifecycle.Observer
+ import androidx.lifecycle.ViewModelProviders
++import androidx.navigation.NavController
++import androidx.navigation.Navigation
+ import androidx.recyclerview.widget.RecyclerView
+ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+ import com.example.androiddata.R
+-import kotlinx.android.synthetic.main.main_fragment.*
++import com.example.androiddata.data.Monster
++import com.example.androiddata.ui.shared.SharedViewModel
+ 
+-class MainFragment : Fragment() {
++class MainFragment : Fragment(),
++    MainRecyclerAdapter.MonsterItemListener {
+ 
+-    private lateinit var viewModel: MainViewModel
++    private lateinit var viewModel: SharedViewModel
+     private lateinit var recyclerView: RecyclerView
+     private lateinit var swipeLayout: SwipeRefreshLayout
++    private lateinit var navController: NavController
+ 
+     override fun onCreateView(
+         inflater: LayoutInflater, container: ViewGroup?,
+         savedInstanceState: Bundle?
+     ): View {
++        (requireActivity() as AppCompatActivity).run {
++            supportActionBar?.setDisplayHomeAsUpEnabled(false)
++        }
+         val view = inflater.inflate(R.layout.main_fragment, container, false)
+         recyclerView = view.findViewById(R.id.recyclerView)
++        navController = Navigation.findNavController(
++            requireActivity(), R.id.nav_host
++        )
+         swipeLayout = view.findViewById(R.id.swipeLayout)
++
++        // refreshind data when swiping
+         swipeLayout.setOnRefreshListener {
+             viewModel.refreshData()
+         }
+-
+-        viewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
++        // require Activity - to bind to an activity not a fragment so we could use it in another fragment
++        viewModel = ViewModelProviders.of(requireActivity()).get(SharedViewModel::class.java)
+         viewModel.monsterData.observe(this, Observer
+         {
+-            val adapter = MainRecyclerAdapter(requireContext(), it)
++            val adapter = MainRecyclerAdapter(requireContext(), it, this)
+             recyclerView.adapter = adapter
++
++            // stop refresh indicator after retrieving data
+             swipeLayout.isRefreshing = false
++
+         })
+ 
+         return view
+     }
+ 
++    override fun onMonsterItemClick(monster: Monster) {
++        viewModel.selectedMonster.value = monster
++        navController.navigate(R.id.detailedFragment)
++    }
++
+ }
+Index: app/src/main/res/navigation/nav_graph.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<navigation xmlns:android=\"http://schemas.android.com/apk/res/android\"\n            xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n            xmlns:tools=\"http://schemas.android.com/tools\"\n            android:id=\"@+id/nav_graph\"\n            app:startDestination=\"@id/mainFragment\">\n\n    <fragment\n            android:id=\"@+id/mainFragment\"\n            android:name=\"com.example.androiddata.ui.main.MainFragment\"\n            android:label=\"main_fragment\"\n            tools:layout=\"@layout/main_fragment\"/>\n</navigation>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/navigation/nav_graph.xml b/app/src/main/res/navigation/nav_graph.xml
+--- a/app/src/main/res/navigation/nav_graph.xml	
++++ b/app/src/main/res/navigation/nav_graph.xml	
+@@ -3,11 +3,29 @@
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/nav_graph"
+-            app:startDestination="@id/mainFragment">
++            app:startDestination="@id/splashFragment">
+ 
+     <fragment
+             android:id="@+id/mainFragment"
+             android:name="com.example.androiddata.ui.main.MainFragment"
+             android:label="main_fragment"
+-            tools:layout="@layout/main_fragment"/>
++            tools:layout="@layout/main_fragment">
++        <action
++                android:id="@+id/action_det_fr"
++                app:destination="@id/detailedFragment" />
++    </fragment>
++    <fragment
++        android:id="@+id/detailedFragment"
++            android:name="com.example.androiddata.ui.detail.DetailedFragment"
++            android:label="detailed_fragment"
++            tools:layout="@layout/fragment_detailed"/>
++    <fragment
++            android:id="@+id/splashFragment"
++            android:name="com.example.androiddata.ui.splash.SplashFragment"
++            android:label="fragment_splash"
++            tools:layout="@layout/fragment_splash" >
++        <action
++                android:id="@+id/action_nav_main"
++                app:destination="@id/mainFragment" />
++    </fragment>
+ </navigation>
+\ No newline at end of file
+Index: app/src/main/java/com/example/androiddata/ui/main/MainRecyclerAdapter.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.androiddata.ui.main\n\nimport android.content.Context\nimport android.view.LayoutInflater\nimport android.view.View\nimport android.view.ViewGroup\nimport android.widget.ImageView\nimport android.widget.RatingBar\nimport android.widget.TextView\nimport androidx.recyclerview.widget.RecyclerView\nimport com.bumptech.glide.Glide\nimport com.example.androiddata.R\nimport com.example.androiddata.data.Monster\n\nclass MainRecyclerAdapter(val context: Context,\n                          val monsters: List<Monster>):\n    RecyclerView.Adapter<MainRecyclerAdapter.ViewHolder>()\n\n{\n    override fun getItemCount() = monsters.size\n\n    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {\n        val inflater = LayoutInflater.from(parent.context)\n        val view = inflater.inflate(R.layout.monster_grid_item, parent, false)\n        return ViewHolder(view)\n    }\n\n    override fun onBindViewHolder(holder: ViewHolder, position: Int) {\n        val monster = monsters[position]\n        with(holder) {\n            nameText?.let {\n                it.text = monster.monsterName\n                it.contentDescription = monster.monsterName\n            }\n            ratingBar?.rating = monster.scariness.toFloat()\n            Glide.with(context)\n                .load(monster.thumbnailUrl)\n                .into(monsterImage)\n        }\n    }\n\n    inner class ViewHolder(itemView: View) :\n            RecyclerView.ViewHolder(itemView) {\n        val nameText = itemView.findViewById<TextView>(R.id.nameText)\n        val monsterImage = itemView.findViewById<ImageView>(R.id.monsterImage)\n        val ratingBar = itemView.findViewById<RatingBar>(R.id.ratingBar)\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/ui/main/MainRecyclerAdapter.kt b/app/src/main/java/com/example/androiddata/ui/main/MainRecyclerAdapter.kt
+--- a/app/src/main/java/com/example/androiddata/ui/main/MainRecyclerAdapter.kt	
++++ b/app/src/main/java/com/example/androiddata/ui/main/MainRecyclerAdapter.kt	
+@@ -13,7 +13,8 @@
+ import com.example.androiddata.data.Monster
+ 
+ class MainRecyclerAdapter(val context: Context,
+-                          val monsters: List<Monster>):
++                          val monsters: List<Monster>,
++                            val itemListener: MonsterItemListener):
+     RecyclerView.Adapter<MainRecyclerAdapter.ViewHolder>()
+ 
+ {
+@@ -26,6 +27,7 @@
+     }
+ 
+     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
++        // event on clicking an item has to be passed to parent - fragment or activity and handled there
+         val monster = monsters[position]
+         with(holder) {
+             nameText?.let {
+@@ -36,6 +38,9 @@
+             Glide.with(context)
+                 .load(monster.thumbnailUrl)
+                 .into(monsterImage)
++            itemView.setOnClickListener{
++                itemListener.onMonsterItemClick(monster)
++            }
+         }
+     }
+ 
+@@ -45,4 +50,8 @@
+         val monsterImage = itemView.findViewById<ImageView>(R.id.monsterImage)
+         val ratingBar = itemView.findViewById<RatingBar>(R.id.ratingBar)
+     }
++
++    interface MonsterItemListener {
++        fun onMonsterItemClick(monster: Monster)
++    }
+ }
+\ No newline at end of file

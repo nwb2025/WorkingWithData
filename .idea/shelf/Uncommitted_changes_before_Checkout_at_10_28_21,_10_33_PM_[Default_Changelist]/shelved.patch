@@ -1,0 +1,531 @@
+Index: app/src/main/java/com/example/androiddata/Global.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/Global.kt b/app/src/main/java/com/example/androiddata/Global.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/androiddata/Global.kt	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ /dev/null	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
+@@ -1,6 +0,0 @@
+-package com.example.androiddata
+-
+-const val LOG_TAG = "monsterLogging"
+-
+-const val WEB_SERVICE_URL = "https://774906.youcanlearnit.net"
+-const val IMAGE_BASE_URL = "$WEB_SERVICE_URL/images"
+\ No newline at end of file
+Index: app/src/main/java/com/example/androiddata/data/MonsterRepository.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/data/MonsterRepository.kt b/app/src/main/java/com/example/androiddata/data/MonsterRepository.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/androiddata/data/MonsterRepository.kt	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ /dev/null	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
+@@ -1,52 +0,0 @@
+-package com.example.androiddata.data
+-
+-import android.app.Application
+-import android.content.Context
+-import android.net.ConnectivityManager
+-import android.util.Log
+-import androidx.annotation.WorkerThread
+-import androidx.lifecycle.MutableLiveData
+-import com.example.androiddata.LOG_TAG
+-import com.example.androiddata.WEB_SERVICE_URL
+-import kotlinx.coroutines.CoroutineScope
+-import kotlinx.coroutines.Dispatchers
+-import kotlinx.coroutines.launch
+-import retrofit2.Retrofit
+-import retrofit2.converter.moshi.MoshiConverterFactory
+-
+-class MonsterRepository(val app: Application) {
+-
+-    val monsterData = MutableLiveData<List<Monster>>()
+-
+-    init {
+-        refreshData()
+-    }
+-
+-    @WorkerThread
+-    suspend fun callWebService() {
+-        if (networkAvailable()) {
+-            Log.i(LOG_TAG, "Calling web service")
+-            val retrofit = Retrofit.Builder()
+-                .baseUrl(WEB_SERVICE_URL)
+-                .addConverterFactory(MoshiConverterFactory.create())
+-                .build()
+-            val service = retrofit.create(MonsterService::class.java)
+-            val serviceData = service.getMonsterData().body() ?: emptyList()
+-            monsterData.postValue(serviceData)
+-        }
+-    }
+-
+-    @Suppress("DEPRECATION")
+-    private fun networkAvailable(): Boolean {
+-        val connectivityManager = app.getSystemService(Context.CONNECTIVITY_SERVICE)
+-            as ConnectivityManager
+-        val networkInfo = connectivityManager.activeNetworkInfo
+-        return networkInfo?.isConnectedOrConnecting ?: false
+-    }
+-
+-    fun refreshData() {
+-        CoroutineScope(Dispatchers.IO).launch {
+-            callWebService()
+-        }
+-    }
+-}
+\ No newline at end of file
+Index: .idea/runConfigurations.xml
+===================================================================
+diff --git a/.idea/runConfigurations.xml b/.idea/runConfigurations.xml
+deleted file mode 100644
+--- a/.idea/runConfigurations.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ /dev/null	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
+@@ -1,12 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project version="4">
+-  <component name="RunConfigurationProducerService">
+-    <option name="ignoredProducers">
+-      <set>
+-        <option value="org.jetbrains.plugins.gradle.execution.test.runner.AllInPackageGradleConfigurationProducer" />
+-        <option value="org.jetbrains.plugins.gradle.execution.test.runner.TestClassGradleConfigurationProducer" />
+-        <option value="org.jetbrains.plugins.gradle.execution.test.runner.TestMethodGradleConfigurationProducer" />
+-      </set>
+-    </option>
+-  </component>
+-</project>
+\ No newline at end of file
+Index: app/src/main/java/com/example/androiddata/ui/main/MainViewModel.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/ui/main/MainViewModel.kt b/app/src/main/java/com/example/androiddata/ui/main/MainViewModel.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/androiddata/ui/main/MainViewModel.kt	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ /dev/null	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
+@@ -1,15 +0,0 @@
+-package com.example.androiddata.ui.main
+-
+-import android.app.Application
+-import androidx.lifecycle.AndroidViewModel
+-import com.example.androiddata.data.MonsterRepository
+-
+-class MainViewModel(app: Application) : AndroidViewModel(app) {
+-    private val dataRepo = MonsterRepository(app)
+-    val monsterData = dataRepo.monsterData
+-
+-    fun refreshData() {
+-        dataRepo.refreshData()
+-    }
+-
+-}
+Index: app/src/main/java/com/example/androiddata/utilities/FileHelper.kt
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/utilities/FileHelper.kt b/app/src/main/java/com/example/androiddata/utilities/FileHelper.kt
+deleted file mode 100644
+--- a/app/src/main/java/com/example/androiddata/utilities/FileHelper.kt	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ /dev/null	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
+@@ -1,23 +0,0 @@
+-package com.example.androiddata.utilities
+-
+-import android.content.Context
+-
+-class FileHelper {
+-    companion object {
+-        fun getTextFromResources(context: Context, resourceId: Int): String {
+-            return context.resources.openRawResource(resourceId).use {
+-                it.bufferedReader().use {
+-                    it.readText()
+-                }
+-            }
+-        }
+-
+-        fun getTextFromAssets(context: Context, fileName: String): String {
+-            return context.assets.open(fileName).use {
+-                it.bufferedReader().use {
+-                    it.readText()
+-                }
+-            }
+-        }
+-    }
+-}
+\ No newline at end of file
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_1_7\" project-jdk-name=\"JDK\" project-jdk-type=\"JavaSDK\" />\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/.idea/misc.xml	(date 1635484800771)
+@@ -1,4 +1,20 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" project-jdk-name="JDK" project-jdk-type="JavaSDK" />
++  <component name="DesignSurface">
++    <option name="filePathToZoomLevelMap">
++      <map>
++        <entry key="app/src/main/res/drawable/background.xml" value="0.30564102564102563" />
++        <entry key="app/src/main/res/drawable/background_selected.xml" value="0.30564102564102563" />
++        <entry key="app/src/main/res/drawable/grid_item_background.xml" value="0.30564102564102563" />
++        <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.30564102564102563" />
++        <entry key="app/src/main/res/layout/fragment_detail.xml" value="0.1265625" />
++        <entry key="app/src/main/res/layout/fragment_detailed.xml" value="0.16302083333333334" />
++        <entry key="app/src/main/res/layout/fragment_splash.xml" value="0.13541666666666666" />
++        <entry key="app/src/main/res/layout/main_activity.xml" value="0.20260416666666667" />
++        <entry key="app/src/main/res/layout/main_fragment.xml" value="0.20260416666666667" />
++        <entry key="app/src/main/res/layout/monster_grid_item.xml" value="0.28974358974358977" />
++      </map>
++    </option>
++  </component>
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="JDK" project-jdk-type="JavaSDK" />
+ </project>
+\ No newline at end of file
+Index: app/src/main/java/com/example/androiddata/data/Monster.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.androiddata.data\n\nimport com.example.androiddata.IMAGE_BASE_URL\n\ndata class Monster (\n    val monsterName: String,\n    val imageFile: String,\n    val caption: String,\n    val description: String,\n    val price: Double,\n    val scariness: Int\n) {\n    val imageUrl\n        get() = \"$IMAGE_BASE_URL/$imageFile.webp\"\n    val thumbnailUrl\n        get() = \"$IMAGE_BASE_URL/${imageFile}_tn.webp\"\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/data/Monster.kt b/app/src/main/java/com/example/androiddata/data/Monster.kt
+--- a/app/src/main/java/com/example/androiddata/data/Monster.kt	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/src/main/java/com/example/androiddata/data/Monster.kt	(date 1635484153594)
+@@ -1,8 +1,13 @@
+ package com.example.androiddata.data
+ 
++import androidx.room.Entity
++import androidx.room.PrimaryKey
+ import com.example.androiddata.IMAGE_BASE_URL
+ 
++@Entity(tableName = "monsters")
+ data class Monster (
++    @PrimaryKey(autoGenerate = true)
++    val monsterId:Int,
+     val monsterName: String,
+     val imageFile: String,
+     val caption: String,
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n          xmlns:tools=\"http://schemas.android.com/tools\"\n          package=\"com.example.androiddata\">\n\n    <uses-permission android:name=\"android.permission.INTERNET\"/>\n    <uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>\n\n    <application\n            android:allowBackup=\"false\"\n            android:icon=\"@mipmap/ic_launcher\"\n            android:label=\"@string/app_name\"\n            android:roundIcon=\"@mipmap/ic_launcher_round\"\n            android:supportsRtl=\"true\"\n            android:theme=\"@style/AppTheme\"\n            tools:ignore=\"GoogleAppIndexingWarning\">\n        <activity android:name=\".MainActivity\"\n                android:label=\"@string/main_title\">\n            <intent-filter>\n                <action android:name=\"android.intent.action.MAIN\"/>\n\n                <category android:name=\"android.intent.category.LAUNCHER\"/>\n            </intent-filter>\n        </activity>\n    </application>\n\n</manifest>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+--- a/app/src/main/AndroidManifest.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/src/main/AndroidManifest.xml	(date 1635484153595)
+@@ -6,6 +6,8 @@
+     <uses-permission android:name="android.permission.INTERNET"/>
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+ 
++    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
++    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+     <application
+             android:allowBackup="false"
+             android:icon="@mipmap/ic_launcher"
+Index: app/src/main/res/values/strings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><resources>\n    <string name=\"app_name\">Monster Stickers</string>\n    <string name=\"main_title\">Stickers</string>\n\n    <!-- TODO: Remove or change this placeholder text -->\n    <string name=\"hello_blank_fragment\">Hello blank fragment</string>\n</resources>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+--- a/app/src/main/res/values/strings.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/src/main/res/values/strings.xml	(date 1635484756927)
+@@ -1,7 +1,5 @@
+ <resources>
+     <string name="app_name">Monster Stickers</string>
+     <string name="main_title">Stickers</string>
+-
+-    <!-- TODO: Remove or change this placeholder text -->
+-    <string name="hello_blank_fragment">Hello blank fragment</string>
++    <string name="scaryness">Scaryness</string>
+ </resources>
+Index: .idea/gradle.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"GradleSettings\">\n    <option name=\"linkedExternalProjectsSettings\">\n      <GradleProjectSettings>\n        <option name=\"distributionType\" value=\"DEFAULT_WRAPPED\" />\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\n        <option name=\"modules\">\n          <set>\n            <option value=\"$PROJECT_DIR$\" />\n            <option value=\"$PROJECT_DIR$/app\" />\n          </set>\n        </option>\n        <option name=\"resolveModulePerSourceSet\" value=\"false\" />\n        <option name=\"testRunner\" value=\"PLATFORM\" />\n      </GradleProjectSettings>\n    </option>\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/gradle.xml b/.idea/gradle.xml
+--- a/.idea/gradle.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/.idea/gradle.xml	(date 1635484179399)
+@@ -1,8 +1,10 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
++  <component name="GradleMigrationSettings" migrationVersion="1" />
+   <component name="GradleSettings">
+     <option name="linkedExternalProjectsSettings">
+       <GradleProjectSettings>
++        <option name="testRunner" value="GRADLE" />
+         <option name="distributionType" value="DEFAULT_WRAPPED" />
+         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+         <option name="modules">
+@@ -12,7 +14,6 @@
+           </set>
+         </option>
+         <option name="resolveModulePerSourceSet" value="false" />
+-        <option name="testRunner" value="PLATFORM" />
+       </GradleProjectSettings>
+     </option>
+   </component>
+Index: app/src/main/res/drawable/background_selected.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<shape xmlns:android=\"http://schemas.android.com/apk/res/android\">\n    <solid android:color=\"#CCC\"/>\n    <stroke android:width=\"3dp\" android:color=\"#B1BCBE\"/>\n    <corners android:radius=\"10dp\"/>\n</shape>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/drawable/background_selected.xml b/app/src/main/res/drawable/background_selected.xml
+--- a/app/src/main/res/drawable/background_selected.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/src/main/res/drawable/background_selected.xml	(date 1635484183739)
+@@ -1,6 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<shape xmlns:android="http://schemas.android.com/apk/res/android">
+-    <solid android:color="#CCC"/>
+-    <stroke android:width="3dp" android:color="#B1BCBE"/>
++<shape
++        xmlns:android="http://schemas.android.com/apk/res/android">
++    <solid android:color="#970A0A"/>
++    <stroke android:width="3dp" android:color="#227F8F"/>
+     <corners android:radius="10dp"/>
+ </shape>
+\ No newline at end of file
+Index: gradle/wrapper/gradle-wrapper.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>#Fri Jun 21 12:24:03 PDT 2019\ndistributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-5.4.1-all.zip\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/gradle/wrapper/gradle-wrapper.properties b/gradle/wrapper/gradle-wrapper.properties
+--- a/gradle/wrapper/gradle-wrapper.properties	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/gradle/wrapper/gradle-wrapper.properties	(date 1635484153579)
+@@ -3,4 +3,4 @@
+ distributionPath=wrapper/dists
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-5.4.1-all.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-7.0.2-all.zip
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+new file mode 100644
+--- /dev/null	(date 1635484189080)
++++ b/.idea/compiler.xml	(date 1635484189080)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="CompilerConfiguration">
++    <bytecodeTargetLevel target="11" />
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/jarRepositories.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/jarRepositories.xml b/.idea/jarRepositories.xml
+new file mode 100644
+--- /dev/null	(date 1635484183736)
++++ b/.idea/jarRepositories.xml	(date 1635484183736)
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="RemoteRepositoriesConfiguration">
++    <remote-repository>
++      <option name="id" value="central" />
++      <option name="name" value="Maven Central repository" />
++      <option name="url" value="https://repo1.maven.org/maven2" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="jboss.community" />
++      <option name="name" value="JBoss Community repository" />
++      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="BintrayJCenter" />
++      <option name="name" value="BintrayJCenter" />
++      <option name="url" value="https://jcenter.bintray.com/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="Google" />
++      <option name="name" value="Google" />
++      <option name="url" value="https://dl.google.com/dl/android/maven2/" />
++    </remote-repository>
++  </component>
++</project>
+\ No newline at end of file
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// Top-level build file where you can add configuration options common to all sub-projects/modules.\n\nbuildscript {\n    ext.kotlin_version = '1.3.40'\n    repositories {\n        google()\n        jcenter()\n        \n    }\n    dependencies {\n        classpath 'com.android.tools.build:gradle:3.5.0-beta04'\n        classpath \"org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version\"\n        // NOTE: Do not place your application dependencies here; they belong\n        // in the individual module build.gradle files\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        jcenter()\n        \n    }\n}\n\ntask clean(type: Delete) {\n    delete rootProject.buildDir\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/build.gradle b/build.gradle
+--- a/build.gradle	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/build.gradle	(date 1635484153581)
+@@ -4,12 +4,12 @@
+     ext.kotlin_version = '1.3.40'
+     repositories {
+         google()
+-        jcenter()
++        mavenCentral()
+         
+     }
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:3.5.0-beta04'
+-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
++        classpath 'com.android.tools.build:gradle:7.0.2'
++        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31"
+         // NOTE: Do not place your application dependencies here; they belong
+         // in the individual module build.gradle files
+     }
+Index: app/src/main/java/com/example/androiddata/ui/shared/SharedViewModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/androiddata/ui/shared/SharedViewModel.kt b/app/src/main/java/com/example/androiddata/ui/shared/SharedViewModel.kt
+new file mode 100644
+--- /dev/null	(date 1635484189083)
++++ b/app/src/main/java/com/example/androiddata/ui/shared/SharedViewModel.kt	(date 1635484189083)
+@@ -0,0 +1,21 @@
++package com.example.androiddata.ui.shared
++
++import android.app.Application
++import androidx.lifecycle.AndroidViewModel
++import androidx.lifecycle.MutableLiveData
++import com.example.androiddata.data.Monster
++import com.example.androiddata.data.MonsterRepo
++
++class SharedViewModel(app: Application) : AndroidViewModel(app) {
++
++    // to share data between fragments
++    val selectedMonster = MutableLiveData<Monster>()
++    private val dataRepo = MonsterRepo(app)
++    val monsterData = dataRepo.monsterData
++
++    fun refreshData(){
++         // we sholdnt update our data here - Separation of concerns! Remember
++        dataRepo.refreshDataFromWeb()
++    }
++
++}
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>apply plugin: 'com.android.application'\n\napply plugin: 'kotlin-android'\n\napply plugin: 'kotlin-android-extensions'\n\nandroid {\n    compileSdkVersion 29\n    buildToolsVersion \"29.0.0\"\n    defaultConfig {\n        applicationId \"com.example.androiddata\"\n        minSdkVersion 18\n        targetSdkVersion 29\n        versionCode 1\n        versionName \"1.0\"\n        testInstrumentationRunner \"androidx.test.runner.AndroidJUnitRunner\"\n    }\n    buildTypes {\n        release {\n            minifyEnabled false\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'\n        }\n    }\n}\n\ndependencies {\n    implementation fileTree(dir: 'libs', include: ['*.jar'])\n    implementation \"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version\"\n    implementation 'androidx.appcompat:appcompat:1.0.2'\n    implementation 'androidx.core:core-ktx:1.0.2'\n    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'\n    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'\n    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0'\n    implementation 'androidx.legacy:legacy-support-v4:1.0.0'\n    testImplementation 'junit:junit:4.12'\n    androidTestImplementation 'androidx.test.ext:junit:1.1.1'\n    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'\n    implementation 'androidx.navigation:navigation-fragment-ktx:2.0.0'\n    implementation 'androidx.navigation:navigation-ui-ktx:2.0.0'\n\n    implementation \"com.squareup.moshi:moshi-kotlin:1.8.0\"\n\n    def retrofit2_version = \"2.6.0\"\n    implementation \"com.squareup.retrofit2:retrofit:$retrofit2_version\"\n    implementation \"com.squareup.retrofit2:converter-moshi:$retrofit2_version\"\n\n    def coroutines_version = \"1.2.1\"\n    implementation \"org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version\"\n    implementation \"org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version\"\n\n    def glide_version = \"4.9.0\"\n    implementation \"com.github.bumptech.glide:glide:$glide_version\"\n    annotationProcessor \"com.github.bumptech.glide:compiler:$glide_version\"\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/build.gradle b/app/build.gradle
+--- a/app/build.gradle	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/build.gradle	(date 1635485184541)
+@@ -2,11 +2,16 @@
+ 
+ apply plugin: 'kotlin-android'
+ 
+-apply plugin: 'kotlin-android-extensions'
++
++// for data binding
++apply plugin: 'kotlin-kapt'
+ 
+ android {
+     compileSdkVersion 29
+-    buildToolsVersion "29.0.0"
++
++    buildFeatures{
++        dataBinding = true
++    }
+     defaultConfig {
+         applicationId "com.example.androiddata"
+         minSdkVersion 18
+@@ -21,11 +26,14 @@
+             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+         }
+     }
++
++
+ }
+ 
+ dependencies {
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
+     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
++    implementation "org.jetbrains.kotlin:kotlin-reflect:1.3.50"
+     implementation 'androidx.appcompat:appcompat:1.0.2'
+     implementation 'androidx.core:core-ktx:1.0.2'
+     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+@@ -50,5 +58,11 @@
+ 
+     def glide_version = "4.9.0"
+     implementation "com.github.bumptech.glide:glide:$glide_version"
+-    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
++    kapt "com.github.bumptech.glide:compiler:$glide_version"
++
++    def room_version = "2.3.0"
++    implementation "androidx.room:room-runtime:$room_version"
++    kapt "androidx.room:room-compiler:$room_version"
++    implementation "androidx.room:room-ktx:$room_version"
++
+ }
+Index: app/src/main/res/layout/fragment_detail.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<FrameLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n             xmlns:tools=\"http://schemas.android.com/tools\"\n             android:layout_width=\"match_parent\"\n             android:layout_height=\"match_parent\"\n             tools:context=\".ui.detail.DetailFragment\">\n\n    <!-- TODO: Update blank fragment layout -->\n    <TextView\n            android:layout_width=\"match_parent\"\n            android:layout_height=\"match_parent\"\n            android:text=\"@string/hello_blank_fragment\"/>\n\n</FrameLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/fragment_detail.xml b/app/src/main/res/layout/fragment_detail.xml
+--- a/app/src/main/res/layout/fragment_detail.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/src/main/res/layout/fragment_detail.xml	(date 1635484646170)
+@@ -9,6 +9,6 @@
+     <TextView
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+-            android:text="@string/hello_blank_fragment"/>
++            android:text=""/>
+ 
+ </FrameLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/main_fragment.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<androidx.constraintlayout.widget.ConstraintLayout\n        xmlns:android=\"http://schemas.android.com/apk/res/android\"\n        xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n        xmlns:tools=\"http://schemas.android.com/tools\"\n        android:id=\"@+id/main\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\"\n        tools:context=\".ui.main.MainFragment\">\n\n    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout\n            android:id=\"@+id/swipeLayout\"\n            android:layout_width=\"0dp\"\n            android:layout_height=\"0dp\"\n            app:layout_constraintTop_toTopOf=\"parent\"\n            app:layout_constraintEnd_toEndOf=\"parent\"\n            app:layout_constraintBottom_toBottomOf=\"parent\"\n            app:layout_constraintStart_toStartOf=\"parent\">\n\n        <androidx.recyclerview.widget.RecyclerView\n                android:id=\"@+id/recyclerView\"\n                android:layout_width=\"match_parent\"\n                android:layout_height=\"match_parent\"\n                android:layout_marginEnd=\"8dp\"\n                android:layout_marginStart=\"8dp\"\n                app:layoutManager=\"androidx.recyclerview.widget.GridLayoutManager\"\n                app:spanCount=\"2\"/>\n\n    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>\n\n</androidx.constraintlayout.widget.ConstraintLayout>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/main_fragment.xml b/app/src/main/res/layout/main_fragment.xml
+--- a/app/src/main/res/layout/main_fragment.xml	(revision b44fca83cb4577acaf364e5a8a60a2aacab62ae9)
++++ b/app/src/main/res/layout/main_fragment.xml	(date 1635484189115)
+@@ -12,19 +12,19 @@
+             android:id="@+id/swipeLayout"
+             android:layout_width="0dp"
+             android:layout_height="0dp"
+-            app:layout_constraintTop_toTopOf="parent"
+-            app:layout_constraintEnd_toEndOf="parent"
+             app:layout_constraintBottom_toBottomOf="parent"
+-            app:layout_constraintStart_toStartOf="parent">
++            app:layout_constraintTop_toTopOf="parent"
++            app:layout_constraintStart_toStartOf="parent"
++            app:layout_constraintEnd_toEndOf="parent">
+ 
+         <androidx.recyclerview.widget.RecyclerView
+                 android:id="@+id/recyclerView"
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+-                android:layout_marginEnd="8dp"
+-                android:layout_marginStart="8dp"
++                android:layout_marginEnd="20dp"
++                android:layout_marginStart="20dp"
+                 app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+-                app:spanCount="2"/>
++                app:spanCount="3"/>
+ 
+     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+ 
